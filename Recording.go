@@ -16,7 +16,7 @@ type Recording struct {
 
 // RecordingEvent is a specific event which took place during a recording
 type RecordingEvent struct {
-	At   time.Time
-	Kind RawEventKind
+	At      time.Time
+	Kind    RawEventKind
 	Subject rune
 }
