@@ -10,7 +10,7 @@ type Dynamics struct {
 	timings map[string]float64
 }
 
-func (d *Dynamics) ManhattanDist(a *Dynamics) (match float64, confidence float64) {
+func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64, confidence float64) {
 	td := 0.0
 	timingsNotInCommon := 0
 	timingsInCommon := 0
@@ -24,7 +24,12 @@ func (d *Dynamics) ManhattanDist(a *Dynamics) (match float64, confidence float64
 		}
 
 		timingsInCommon++
-		td += math.Abs(t1 - t2)
+
+		if squareDifferences {
+			td += math.Pow(math.Abs(t1-t2), 2)
+		} else {
+			td += math.Abs(t1 - t2)
+		}
 	}
 
 	totalTimings := timingsNotInCommon + timingsInCommon
@@ -32,26 +37,16 @@ func (d *Dynamics) ManhattanDist(a *Dynamics) (match float64, confidence float64
 	return td, float64(timingsInCommon) / (float64(totalTimings))
 }
 
+func (d *Dynamics) ManhattanDist(a *Dynamics) (match float64, confidence float64) {
+	idist, confidence := d.intermediateDist(a, false)
+
+	return idist, confidence
+}
+
 func (d *Dynamics) EuclideanDist(a *Dynamics) (match float64, confidence float64) {
-	td := 0.0
-	timingsNotInCommon := 0
-	timingsInCommon := 0
+	idist, confidence := d.intermediateDist(a, false)
 
-	for timingName, t1 := range d.timings {
-		t2, ok := a.timings[timingName]
+	euclideanDist := math.Sqrt(idist)
 
-		if !ok {
-			timingsNotInCommon++
-			continue
-		}
-
-		timingsInCommon++
-		td += math.Pow(math.Abs(t1-t2), 2)
-	}
-
-	euclideanDist := math.Sqrt(td)
-
-	totalTimings := timingsNotInCommon + timingsInCommon
-
-	return euclideanDist, float64(timingsInCommon) / (float64(totalTimings))
+	return euclideanDist, confidence
 }
