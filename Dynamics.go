@@ -23,6 +23,8 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist f
 			continue
 		}
 
+		// Scaling should be performed here
+
 		timingsInCommon++
 
 		if squareDifferences {
