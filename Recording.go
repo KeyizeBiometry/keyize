@@ -20,3 +20,9 @@ type RecordingEvent struct {
 	Kind    RawEventKind
 	Subject rune
 }
+
+// TODO: add import method for Recording
+// func (r *Recording) ImportRaw(raw string) error
+
+// Or: add new recording from raw function
+// func ImportRaw(raw string) (*Recording, error)

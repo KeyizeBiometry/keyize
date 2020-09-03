@@ -46,7 +46,7 @@ func (d *Dynamics) EuclideanDist(a *Dynamics) (match float64, confidence float64
 		}
 
 		timingsInCommon++
-		td += math.Pow(math.Abs(t1 - t2), 2)
+		td += math.Pow(math.Abs(t1-t2), 2)
 	}
 
 	euclideanDist := math.Sqrt(td)
