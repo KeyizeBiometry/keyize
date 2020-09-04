@@ -85,7 +85,7 @@ func (d *Dynamics) ManhattanDist(a *Dynamics) (dist float64, confidence float64)
 // EuclideanDist uses the Euclidean distance metric to find distance between Dynamics d and a.
 // It also provides a confidence level, which represents the proportion of shared, comparable properties.
 func (d *Dynamics) EuclideanDist(a *Dynamics) (dist float64, confidence float64) {
-	idist, confidence := d.intermediateDist(a, false)
+	idist, confidence := d.intermediateDist(a, true)
 
 	euclideanDist := math.Sqrt(idist)
 
