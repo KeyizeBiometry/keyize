@@ -2,12 +2,44 @@ package keyize
 
 import "math"
 
+type DynamicsPropertyKind int
+
+const (
+	Dwell DynamicsPropertyKind = iota
+	DownDown
+	UpDown
+)
+
+type DynamicsProperty struct {
+	Kind  DynamicsPropertyKind
+	KeyA  rune
+	KeyB  rune
+	Value float64
+}
+
+// Name provides the name for the property (this can be used as a key by a Dynamics)
+func (d *DynamicsProperty) Name() string {
+	switch d.Kind {
+	case Dwell:
+		return "D." + string(d.KeyA)
+	case DownDown:
+		return "DD." + string(d.KeyA) + "." + string(d.KeyB)
+	case UpDown:
+		return "UD." + string(d.KeyA) + "." + string(d.KeyB)
+	default:
+		panic("cannot create a name for a DynamicsProperty of unknown kind")
+	}
+}
+
 // Dynamics represents a group of dynamics properties
 type Dynamics struct {
 	// timings is an internally managed set of dynamics properties
-	// It is private to prevent mismanagement, as the keys should be
-	// formatted correctly.
-	timings map[string]float64
+	// It is private to prevent the introduction of malformatted keys.
+	timings map[string]*DynamicsProperty
+}
+
+func (d *Dynamics) PushProperty(p *DynamicsProperty) {
+	d.timings[p.Name()] = p
 }
 
 func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64, confidence float64) {
@@ -28,9 +60,9 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist f
 		timingsInCommon++
 
 		if squareDifferences {
-			td += math.Pow(math.Abs(t1-t2), 2)
+			td += math.Pow(math.Abs(t1.Value-t2.Value), 2)
 		} else {
-			td += math.Abs(t1 - t2)
+			td += math.Abs(t1.Value - t2.Value)
 		}
 	}
 
