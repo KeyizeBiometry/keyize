@@ -10,6 +10,8 @@ const (
 	UpDown
 )
 
+// DynamicsProperty is a keystroke dynamics property, often synthesized from
+// a Recording.
 type DynamicsProperty struct {
 	Kind  DynamicsPropertyKind
 	KeyA  rune
@@ -38,7 +40,8 @@ type Dynamics struct {
 	timings map[string]*DynamicsProperty
 }
 
-func (d *Dynamics) PushProperty(p *DynamicsProperty) {
+// AddProperty adds DynamicsProperty p to the internal map in Dynamics d.
+func (d *Dynamics) AddProperty(p *DynamicsProperty) {
 	d.timings[p.Name()] = p
 }
 
@@ -71,13 +74,17 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist f
 	return td, float64(timingsInCommon) / (float64(totalTimings))
 }
 
-func (d *Dynamics) ManhattanDist(a *Dynamics) (match float64, confidence float64) {
+// ManhattanDist uses the Manhattan distance metric to find distance between Dynamics d and a.
+// It also provides a confidence level, which represents the proportion of shared, comparable properties.
+func (d *Dynamics) ManhattanDist(a *Dynamics) (dist float64, confidence float64) {
 	idist, confidence := d.intermediateDist(a, false)
 
 	return idist, confidence
 }
 
-func (d *Dynamics) EuclideanDist(a *Dynamics) (match float64, confidence float64) {
+// EuclideanDist uses the Euclidean distance metric to find distance between Dynamics d and a.
+// It also provides a confidence level, which represents the proportion of shared, comparable properties.
+func (d *Dynamics) EuclideanDist(a *Dynamics) (dist float64, confidence float64) {
 	idist, confidence := d.intermediateDist(a, false)
 
 	euclideanDist := math.Sqrt(idist)
