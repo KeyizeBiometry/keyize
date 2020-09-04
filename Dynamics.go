@@ -69,9 +69,9 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist f
 		}
 	}
 
-	totalTimings := propsNotInCommonCount + propsInCommonCount
+	totalProps := propsNotInCommonCount + propsInCommonCount
 
-	return td, float64(propsInCommonCount) / (float64(totalTimings))
+	return td, float64(propsInCommonCount) / (float64(totalProps))
 }
 
 // ManhattanDist uses the Manhattan distance metric to find distance between Dynamics d and a.
