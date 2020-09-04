@@ -35,32 +35,32 @@ func (d *DynamicsProperty) Name() string {
 
 // Dynamics represents a group of dynamics properties
 type Dynamics struct {
-	// timings is an internally managed set of dynamics properties
+	// properties is an internally managed set of dynamics properties
 	// It is private to prevent the introduction of malformatted keys.
-	timings map[string]*DynamicsProperty
+	properties map[string]*DynamicsProperty
 }
 
 // AddProperty adds DynamicsProperty p to the internal map in Dynamics d.
 func (d *Dynamics) AddProperty(p *DynamicsProperty) {
-	d.timings[p.Name()] = p
+	d.properties[p.Name()] = p
 }
 
 func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64, confidence float64) {
 	td := 0.0
-	timingsNotInCommon := 0
-	timingsInCommon := 0
+	propsNotInCommonCount := 0
+	propsInCommonCount := 0
 
-	for timingName, t1 := range d.timings {
-		t2, ok := a.timings[timingName]
+	for timingName, t1 := range d.properties {
+		t2, ok := a.properties[timingName]
 
 		if !ok {
-			timingsNotInCommon++
+			propsNotInCommonCount++
 			continue
 		}
 
 		// Scaling should be performed here
 
-		timingsInCommon++
+		propsInCommonCount++
 
 		if squareDifferences {
 			td += math.Pow(math.Abs(t1.Value-t2.Value), 2)
@@ -69,9 +69,9 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist f
 		}
 	}
 
-	totalTimings := timingsNotInCommon + timingsInCommon
+	totalTimings := propsNotInCommonCount + propsInCommonCount
 
-	return td, float64(timingsInCommon) / (float64(totalTimings))
+	return td, float64(propsInCommonCount) / (float64(totalTimings))
 }
 
 // ManhattanDist uses the Manhattan distance metric to find distance between Dynamics d and a.
