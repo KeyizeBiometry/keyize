@@ -16,9 +16,9 @@ func TestDynamics_GetProportionSharedProperties(t *testing.T) {
 	})
 
 	dynA.AddProperty(&DynamicsProperty{
-		Kind:  DownDown,
-		KeyA:  'h',
-		KeyB:  'j',
+		Kind:  UpDown,
+		KeyA:  'b',
+		KeyB:  'd',
 		Value: 8.88,
 	})
 
@@ -30,10 +30,17 @@ func TestDynamics_GetProportionSharedProperties(t *testing.T) {
 	})
 
 	dynB.AddProperty(&DynamicsProperty{
-		Kind:  DownDown,
-		KeyA:  'k',
-		KeyB:  'l',
+		Kind:  UpDown,
+		KeyA:  'b',
+		KeyB:  'c',
 		Value: 3.33,
+	})
+
+	dynB.AddProperty(&DynamicsProperty{
+		Kind:  UpDown,
+		KeyA:  'c',
+		KeyB:  'd',
+		Value: 7.33,
 	})
 
 	getPropAssertMultidirectional := func(a *Dynamics, b *Dynamics, method SharedPropertiesMethod) float64 {
@@ -60,11 +67,11 @@ func TestDynamics_GetProportionSharedProperties(t *testing.T) {
 		return resA
 	}
 
-	if v := getPropAssertMultidirectional(dynA, dynB, Both); v < 0.33 || v > 0.34 {
+	if v := getPropAssertMultidirectional(dynA, dynB, Both); v != 0.25 {
 		t.Errorf("bad Both %f", v)
 	}
 
-	if v := getPropAssertMultidirectional(dynA, dynB, Right); v != 0.5 {
+	if v := getPropAssertMultidirectional(dynA, dynB, Right); v < 0.33 || v > 0.34 {
 		t.Errorf("bad Right %f", v)
 	}
 
