@@ -78,43 +78,27 @@ func (d *Dynamics) GetProportionSharedProperties(a *Dynamics, method SharedPrope
 		}
 
 		for _, prop := range targetA.properties {
-			_, ok := targetB.properties[prop.Name()]
-
-			if ok {
+			if _, ok := targetB.properties[prop.Name()]; ok {
 				shared++
 			}
 
 			total++
 		}
 	} else if method == Both {
-		discoveredAProps := []*DynamicsProperty{}
+		correspondingAPropsCount := 0
 
 		for _, prop := range d.properties {
-			p, ok := a.properties[prop.Name()]
-
-			if ok {
+			if _, ok := a.properties[prop.Name()]; ok {
 				shared++
-				discoveredAProps = append(discoveredAProps, p)
+				correspondingAPropsCount++
 			}
 
 			total++
 		}
 
-		for _, prop := range a.properties {
-			// Check if prop is already discovered
-			alreadyDiscovered := false
-
-			for _, p := range discoveredAProps {
-				if prop == p {
-					alreadyDiscovered = true
-				}
-			}
-
-			if !alreadyDiscovered {
-				// If not already discovered, this property is also not shared.
-				total++
-			}
-		}
+		// Add unaccounted A props to total.
+		// It is known that these are not shared because we already found all shared props.
+		total += len(a.properties) - correspondingAPropsCount
 	}
 
 	return float64(shared) / float64(total)
