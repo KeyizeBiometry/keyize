@@ -17,8 +17,13 @@ const (
 type SharedPropertiesMethod int
 
 const (
+	// Consider properties from Dynamics d and a
 	Both SharedPropertiesMethod = iota
+
+	// Consider properties from only Dynamics d
 	Left
+
+	// Consider properties from only Dynamics a
 	Right
 )
 
@@ -63,10 +68,17 @@ func (d *Dynamics) AddProperty(p *DynamicsProperty) {
 	d.properties[p.Name()] = p
 }
 
+// GetProportionSharedProperties returns the proportion of properties shared between Dynamics d and a
+// with respect to SharedPropertiesMethod method.
 func (d *Dynamics) GetProportionSharedProperties(a *Dynamics, method SharedPropertiesMethod) float64 {
-	shared := 0
-	total := 0
+	shared, total := d.GetSharedProperties(a, method)
 
+	return float64(shared) / float64(total)
+}
+
+// GetSharedProperties returns the count of properties shared between Dynamics d and a
+// as well as the count of total properties considered with respect to SharedPropertiesMethod method.
+func (d *Dynamics) GetSharedProperties(a *Dynamics, method SharedPropertiesMethod) (shared int, total int) {
 	if method == Right || method == Left {
 		var targetA *Dynamics
 		var targetB *Dynamics
@@ -103,7 +115,7 @@ func (d *Dynamics) GetProportionSharedProperties(a *Dynamics, method SharedPrope
 		total += len(a.properties) - correspondingAPropsCount
 	}
 
-	return float64(shared) / float64(total)
+	return shared, total
 }
 
 func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64) {
