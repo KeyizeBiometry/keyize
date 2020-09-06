@@ -1,6 +1,8 @@
 package keyize
 
-import "math"
+import (
+	"math"
+)
 
 type DynamicsPropertyKind int
 
@@ -8,6 +10,14 @@ const (
 	Dwell DynamicsPropertyKind = iota
 	DownDown
 	UpDown
+)
+
+type SharedPropertiesMethod int
+
+const (
+	Both SharedPropertiesMethod = iota
+	Left
+	Right
 )
 
 // DynamicsProperty is a keystroke dynamics property, often synthesized from
@@ -40,9 +50,74 @@ type Dynamics struct {
 	properties map[string]*DynamicsProperty
 }
 
+func NewDynamics() *Dynamics {
+	return &Dynamics{
+		properties: map[string]*DynamicsProperty{},
+	}
+}
+
 // AddProperty adds DynamicsProperty p to the internal map in Dynamics d.
 func (d *Dynamics) AddProperty(p *DynamicsProperty) {
 	d.properties[p.Name()] = p
+}
+
+func (d *Dynamics) GetProportionSharedProperties(a *Dynamics, method SharedPropertiesMethod) float64 {
+	shared := 0
+	total := 0
+
+	if method == Right || method == Left {
+		var targetA *Dynamics
+		var targetB *Dynamics
+
+		if method == Right {
+			targetA = a
+			targetB = d
+		} else {
+			targetA = d
+			targetB = a
+		}
+
+		for _, prop := range targetA.properties {
+			_, ok := targetB.properties[prop.Name()]
+
+			if ok {
+				shared++
+			}
+
+			total++
+		}
+	} else if method == Both {
+		discoveredAProps := []*DynamicsProperty{}
+
+		for _, prop := range d.properties {
+			p, ok := a.properties[prop.Name()]
+
+			if ok {
+				shared++
+				discoveredAProps = append(discoveredAProps, p)
+			}
+
+			total++
+		}
+
+		for _, prop := range a.properties {
+			// Check if prop is already discovered
+			alreadyDiscovered := false
+
+			for _, p := range discoveredAProps {
+				if prop == p {
+					alreadyDiscovered = true
+				}
+			}
+
+			if !alreadyDiscovered {
+				// If not already discovered, this property is also not shared.
+				total++
+			}
+		}
+	}
+
+	return float64(shared) / float64(total)
 }
 
 func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64, confidence float64) {
