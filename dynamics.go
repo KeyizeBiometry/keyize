@@ -106,22 +106,18 @@ func (d *Dynamics) GetProportionSharedProperties(a *Dynamics, method SharedPrope
 	return float64(shared) / float64(total)
 }
 
-func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64, confidence float64) {
+func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64) {
 	td := 0.0
-	propsNotInCommonCount := 0
-	propsInCommonCount := 0
 
 	for timingName, t1 := range d.properties {
 		t2, ok := a.properties[timingName]
 
 		if !ok {
-			propsNotInCommonCount++
+			// Property not shared
 			continue
 		}
 
 		// Scaling should be performed here
-
-		propsInCommonCount++
 
 		if squareDifferences {
 			td += math.Pow(math.Abs(t1.Value-t2.Value), 2)
@@ -130,25 +126,21 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist f
 		}
 	}
 
-	totalProps := propsNotInCommonCount + propsInCommonCount
-
-	return td, float64(propsInCommonCount) / (float64(totalProps))
+	return td
 }
 
 // ManhattanDist uses the Manhattan distance metric to find distance between Dynamics d and a.
-// It also provides a confidence level, which represents the proportion of shared, comparable properties.
-func (d *Dynamics) ManhattanDist(a *Dynamics) (dist float64, confidence float64) {
-	idist, confidence := d.intermediateDist(a, false)
+func (d *Dynamics) ManhattanDist(a *Dynamics) (dist float64) {
+	idist := d.intermediateDist(a, false)
 
-	return idist, confidence
+	return idist
 }
 
 // EuclideanDist uses the Euclidean distance metric to find distance between Dynamics d and a.
-// It also provides a confidence level, which represents the proportion of shared, comparable properties.
-func (d *Dynamics) EuclideanDist(a *Dynamics) (dist float64, confidence float64) {
-	idist, confidence := d.intermediateDist(a, true)
+func (d *Dynamics) EuclideanDist(a *Dynamics) (dist float64) {
+	idist := d.intermediateDist(a, true)
 
 	euclideanDist := math.Sqrt(idist)
 
-	return euclideanDist, confidence
+	return euclideanDist
 }
