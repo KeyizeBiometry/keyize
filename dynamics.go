@@ -1,3 +1,5 @@
+// Package keyize provides abstractions to be used for the representation and computation of keystroke-related data.
+// Keyize supports a wide array of keystroke recording and keystroke dynamics processing activities.
 package keyize
 
 import (
