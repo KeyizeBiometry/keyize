@@ -74,9 +74,3 @@ func ImportKeyizeV1(d string) (*Recording, error) {
 
 	return rec, nil
 }
-
-// TODO: add import method for Recording
-// func (r *Recording) ImportRaw(raw string) error
-
-// Or: add new recording from raw function
-// func ImportRaw(raw string) (*Recording, error)
