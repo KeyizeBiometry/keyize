@@ -58,8 +58,8 @@ func pushEvent(m map[string][]int, eventName string, value int) {
 	}
 }
 
-// ToDynamics converts the raw data from Recording r to Dynamics d by extracting and averaging timings.
-func (r *Recording) ToDynamics() *Dynamics {
+// Dynamics converts the raw data from Recording r to Dynamics d by extracting and averaging timings.
+func (r *Recording) Dynamics() *Dynamics {
 	// Create propTimings (prop -> timings slice)
 	// First rune of key: a = DownDown, b = UpDown, c = Dwell
 
