@@ -43,7 +43,7 @@ func TestDynamics_GetProportionSharedProperties(t *testing.T) {
 		Value: 7.33,
 	})
 
-	// getPropAssertMultidirectional executes the requested GetProportionSharedProperties as well as the appropriate inverse to ensure that expected values are produced with both a and b as the argument Dynamics.
+	// getPropAssertMultidirectional executes the requested ProportionSharedProperties as well as the appropriate inverse to ensure that expected values are produced with both a and b as the argument Dynamics.
 	getPropAssertMultidirectional := func(a *Dynamics, b *Dynamics, method SharedPropertiesMethod) float64 {
 		var methodB SharedPropertiesMethod
 
@@ -60,8 +60,8 @@ func TestDynamics_GetProportionSharedProperties(t *testing.T) {
 
 		// Execute both
 
-		resA := a.GetProportionSharedProperties(dynB, method)
-		resB := b.GetProportionSharedProperties(dynA, methodB)
+		resA := a.ProportionSharedProperties(dynB, method)
+		resB := b.ProportionSharedProperties(dynA, methodB)
 
 		// Ensure requested is equal to inverse
 

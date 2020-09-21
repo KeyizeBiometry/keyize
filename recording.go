@@ -33,7 +33,8 @@ type RecordingEvent struct {
 	Subject rune
 }
 
-func (r *Recording) GetText() string {
+// Text returns the text typed in Recording r.
+func (r *Recording) Text() string {
 	var text []rune
 
 	for _, e := range r.Events {

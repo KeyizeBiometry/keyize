@@ -63,8 +63,8 @@ func NewDynamics() *Dynamics {
 	}
 }
 
-// GetProperties returns the internally managed set of properties.
-func (d *Dynamics) GetProperties() map[string]*DynamicsProperty {
+// Properties returns the internally managed set of properties.
+func (d *Dynamics) Properties() map[string]*DynamicsProperty {
 	return d.properties
 }
 
@@ -73,17 +73,17 @@ func (d *Dynamics) AddProperty(p *DynamicsProperty) {
 	d.properties[p.Name()] = p
 }
 
-// GetProportionSharedProperties returns the proportion of properties shared between Dynamics d and a
+// ProportionSharedProperties returns the proportion of properties shared between Dynamics d and a
 // with respect to SharedPropertiesMethod method.
-func (d *Dynamics) GetProportionSharedProperties(a *Dynamics, method SharedPropertiesMethod) float64 {
-	shared, total := d.GetSharedProperties(a, method)
+func (d *Dynamics) ProportionSharedProperties(a *Dynamics, method SharedPropertiesMethod) float64 {
+	shared, total := d.SharedProperties(a, method)
 
 	return float64(shared) / float64(total)
 }
 
-// GetSharedProperties returns the count of properties shared between Dynamics d and a
+// SharedProperties returns the count of properties shared between Dynamics d and a
 // as well as the count of total properties considered with respect to SharedPropertiesMethod method.
-func (d *Dynamics) GetSharedProperties(a *Dynamics, method SharedPropertiesMethod) (shared int, total int) {
+func (d *Dynamics) SharedProperties(a *Dynamics, method SharedPropertiesMethod) (shared int, total int) {
 	if method == Right || method == Left {
 		var targetA *Dynamics
 		var targetB *Dynamics
