@@ -33,6 +33,20 @@ type RecordingEvent struct {
 	Subject rune
 }
 
+func (r *Recording) GetText() string {
+	var text []rune
+
+	for _, e := range r.Events {
+		if e.Kind == KeyDown {
+			text = append(text, e.Subject)
+		}
+	}
+
+	return string(text)
+}
+
+// pushEvent adds an int value to an []int value of key eventName in map m.
+// If the []int does not exist at key eventName, pushEvent will initialize it.
 func pushEvent(m map[string][]int, eventName string, value int) {
 	_, ok := m[eventName]
 
