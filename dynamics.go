@@ -63,6 +63,11 @@ func NewDynamics() *Dynamics {
 	}
 }
 
+// GetProperties returns the internally managed set of properties.
+func (d *Dynamics) GetProperties() map[string]*DynamicsProperty {
+	return d.properties
+}
+
 // AddProperty adds DynamicsProperty p to the internal map in Dynamics d.
 func (d *Dynamics) AddProperty(p *DynamicsProperty) {
 	d.properties[p.Name()] = p
