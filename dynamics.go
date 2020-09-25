@@ -3,7 +3,9 @@
 package keyize
 
 import (
+	"errors"
 	"math"
+	"strconv"
 )
 
 type DynamicsPropertyKind int
@@ -13,6 +15,15 @@ const (
 	DownDown
 	UpDown
 )
+
+// defaultDynamicsPropertyKindScaleMap is the optimized kind scale map discovered during research
+var defaultDynamicsPropertyKindScaleMap = DynamicsPropertyKindScaleMap{
+	Dwell:    1,
+	DownDown: 1 / 19.4,
+	UpDown:   1 / 14,
+}
+
+type DynamicsPropertyKindScaleMap map[DynamicsPropertyKind]float64
 
 type SharedPropertiesMethod int
 
@@ -123,7 +134,7 @@ func (d *Dynamics) SharedProperties(a *Dynamics, method SharedPropertiesMethod) 
 	return shared, total
 }
 
-func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist float64) {
+func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool, propertyKindScaleMap DynamicsPropertyKindScaleMap) (dist float64, err error) {
 	td := 0.0
 
 	for timingName, t1 := range d.properties {
@@ -134,30 +145,51 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool) (dist f
 			continue
 		}
 
-		// Scaling should be performed here
+		// Perform scaling
+
+		scaleProp, ok := propertyKindScaleMap[t1.Kind]
+
+		if !ok {
+			scaleProp, ok = defaultDynamicsPropertyKindScaleMap[t1.Kind]
+
+			if !ok {
+				// Default map and provided map do not include scale for kind
+
+				return 900, errors.New("could not locate a scale value for kind " + strconv.Itoa(int(t1.Kind)))
+			}
+		}
+
+		scaledT1Value := t1.Value * scaleProp
+		scaledT2Value := t2.Value * scaleProp
+
+		// Calculate total using scaled values
 
 		if squareDifferences {
-			td += math.Pow(math.Abs(t1.Value-t2.Value), 2)
+			td += math.Pow(math.Abs(scaledT1Value-scaledT2Value), 2)
 		} else {
-			td += math.Abs(t1.Value - t2.Value)
+			td += math.Abs(scaledT1Value - scaledT2Value)
 		}
 	}
 
-	return td
+	return td, nil
 }
 
 // ManhattanDist uses the Manhattan distance metric to find distance between Dynamics d and a.
-func (d *Dynamics) ManhattanDist(a *Dynamics) (dist float64) {
-	idist := d.intermediateDist(a, false)
+//
+// It uses propertyKindScaleMap for scaling. nil may be passed for propertyKindScaleMap and the optimized defaults will be used.
+func (d *Dynamics) ManhattanDist(a *Dynamics, propertyKindScaleMap DynamicsPropertyKindScaleMap) (dist float64, err error) {
+	idist, err := d.intermediateDist(a, false, propertyKindScaleMap)
 
-	return idist
+	return idist, err
 }
 
 // EuclideanDist uses the Euclidean distance metric to find distance between Dynamics d and a.
-func (d *Dynamics) EuclideanDist(a *Dynamics) (dist float64) {
-	idist := d.intermediateDist(a, true)
+//
+// It uses propertyKindScaleMap for scaling. nil may be passed for propertyKindScaleMap and the optimized defaults will be used.
+func (d *Dynamics) EuclideanDist(a *Dynamics, propertyKindScaleMap DynamicsPropertyKindScaleMap) (dist float64, err error) {
+	idist, err := d.intermediateDist(a, true, propertyKindScaleMap)
 
 	euclideanDist := math.Sqrt(idist)
 
-	return euclideanDist
+	return euclideanDist, err
 }
