@@ -23,6 +23,11 @@ var defaultDynamicsPropertyKindScaleMap = DynamicsPropertyKindScaleMap{
 	UpDown:   1 / 14,
 }
 
+// DynamicsPropertyKindScaleMap is a map of DynamicsPropertyKind to scaling values.
+// It is used when calculating distance between multiple Dynamics.
+//
+// If a key is missing, it may be replaced with the default, optimized value if present.
+// Using the optimized default scale values by passing nil to distance methods for the propertyKindScaleMap argument is recommended.
 type DynamicsPropertyKindScaleMap map[DynamicsPropertyKind]float64
 
 type SharedPropertiesMethod int
@@ -82,6 +87,11 @@ func (d *Dynamics) Properties() map[string]*DynamicsProperty {
 // AddProperty adds DynamicsProperty p to the internal map in Dynamics d.
 func (d *Dynamics) AddProperty(p *DynamicsProperty) {
 	d.properties[p.Name()] = p
+}
+
+// RemoveProperty removes DynamicsProperty p from the internal map in Dynamics d.
+func (d *Dynamics) RemoveProperty(p *DynamicsProperty) {
+	delete(d.properties, p.Name())
 }
 
 // ProportionSharedProperties returns the proportion of properties shared between Dynamics d and a
