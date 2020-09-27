@@ -1,5 +1,6 @@
 package keyize
 
+// AvgDynamics returns a pointer to a new Dynamics which is the average of all Dynamics contained from d.
 func AvgDynamics(d []*Dynamics) *Dynamics {
 	propSet := newFloatSliceMapMan()
 
