@@ -1,5 +1,11 @@
 package keyize
 
+// Note for the future: once vanilla Go supports generics, floatSliceMapMan should be converted
+// to numericSliceMapMan. Then in recording.Dynamics(), ints should be used for most calculations until the final
+// creation of a Dynamics.
+//
+// This will allow the avoidance of unnecessary float math operations.
+
 type floatSliceMapMan map[string][]float64
 
 func newFloatSliceMapMan() floatSliceMapMan {
