@@ -46,24 +46,12 @@ func (r *Recording) Text() string {
 	return string(text)
 }
 
-// pushEvent adds an int value to an []int value of key eventName in map m.
-// If the []int does not exist at key eventName, pushEvent will initialize it.
-func pushEvent(m map[string][]int, eventName string, value int) {
-	_, ok := m[eventName]
-
-	if !ok {
-		m[eventName] = []int{value}
-	} else {
-		m[eventName] = append(m[eventName], value)
-	}
-}
-
 // Dynamics converts the raw data from Recording r to Dynamics d by extracting and averaging timings.
 func (r *Recording) Dynamics() *Dynamics {
 	// Create propTimings (prop -> timings slice)
 	// First rune of key: a = DownDown, b = UpDown, c = Dwell
 
-	propTimings := map[string][]int{}
+	propTimings := newFloatSliceMapMan()
 
 	var lastDown rune
 	var lastDownTime int
@@ -80,7 +68,7 @@ func (r *Recording) Dynamics() *Dynamics {
 			if lastDown != '\x00' {
 				ddEventName := "a" + string(lastDown) + string(e.Subject)
 
-				pushEvent(propTimings, ddEventName, e.At-lastDownTime)
+				propTimings.Add(ddEventName, float64(e.At-lastDownTime))
 			}
 
 			// UpDown / UD prop
@@ -89,7 +77,7 @@ func (r *Recording) Dynamics() *Dynamics {
 			if lastUp != '\x00' {
 				udEventName := "b" + string(lastUp) + string(e.Subject)
 
-				pushEvent(propTimings, udEventName, e.At-lastUpTime)
+				propTimings.Add(udEventName, float64(e.At-lastUpTime))
 			}
 
 			// Update lastDown
@@ -108,7 +96,7 @@ func (r *Recording) Dynamics() *Dynamics {
 
 					dwellEventName := "c" + string(e.Subject)
 
-					pushEvent(propTimings, dwellEventName, e.At-relevantPreviousEvent.At)
+					propTimings.Add(dwellEventName, float64(e.At-relevantPreviousEvent.At))
 
 					break
 				}
@@ -123,17 +111,7 @@ func (r *Recording) Dynamics() *Dynamics {
 
 	// Average propTimings
 
-	avgPropTimings := map[string]int{}
-
-	for prop, timings := range propTimings {
-		total := 0
-
-		for _, t := range timings {
-			total += t
-		}
-
-		avgPropTimings[prop] = total / len(timings)
-	}
+	avgPropTimings := propTimings.Reduce()
 
 	// Create the Dynamics and convert avgPropTimings timings to DynamicsProperties
 
@@ -165,7 +143,7 @@ func (r *Recording) Dynamics() *Dynamics {
 				Kind:  propKind,
 				KeyA:  rune1,
 				KeyB:  rune2,
-				Value: float64(avgTime),
+				Value: avgTime,
 			})
 		case 'c':
 			// Dwell
@@ -176,7 +154,7 @@ func (r *Recording) Dynamics() *Dynamics {
 				Kind:  Dwell,
 				KeyA:  rune1,
 				KeyB:  '\x00',
-				Value: float64(avgTime),
+				Value: avgTime,
 			})
 		}
 	}
