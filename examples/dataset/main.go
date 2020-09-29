@@ -10,11 +10,6 @@ import (
 	"unicode/utf8"
 )
 
-type session struct {
-	subject string
-	d       *keyize.Dynamics
-}
-
 var firstSegKindMap = map[string]keyize.DynamicsPropertyKind{
 	"H":  keyize.Dwell,
 	"DD": keyize.DownDown,
@@ -37,17 +32,13 @@ func convRune(s string) rune {
 	}
 }
 
-func avgFloatSlice(a []float64) float64 {
-	t := 0.0
-
-	for _, v := range a {
-		t += v
-	}
-
-	return t / float64(len(a))
+type subject struct {
+	name string
+	sessions   []*keyize.Dynamics
+	avgSession *keyize.Dynamics
 }
 
-var sessions []*session
+var subjects = map[string]*subject{}
 
 func main() {
 	// Open file
@@ -62,7 +53,9 @@ func main() {
 		panic(err)
 	}
 
-	// Parse data to memory (sessions)
+	defer f.Close()
+
+	// Parse data to memory (subjects)
 
 	fmt.Println("Loading data...")
 
@@ -84,27 +77,26 @@ func main() {
 			continue
 		}
 
-		s := &session{
-			subject: "",
-			d:       keyize.NewDynamics(),
+		if len(subjects) >= 10 || i < 10 {
+			continue
 		}
 
-		for i, v := range record {
-			fieldName := fieldOrder[i]
+		s := keyize.NewDynamics()
+		var curSubj string
+
+		for i2, v := range record {
+			fieldName := fieldOrder[i2]
 
 			if fieldName == "subject" {
-				s.subject = v
+				curSubj = v
 			} else if fieldName != "sessionIndex" && fieldName != "rep" {
 				fieldNameSegs := strings.Split(fieldName, ".")
 
-				kind := firstSegKindMap[fieldNameSegs[0]]
-
-				keyA := convRune(fieldNameSegs[1])
-				var keyB rune
-
-				if len(fieldNameSegs) >= 3 {
-					keyB = convRune(fieldNameSegs[2])
+				if fieldNameSegs[0] == "H" {
+					fieldNameSegs[0] = "D"
 				}
+
+				finalFieldName := strings.Join(fieldNameSegs, ".")
 
 				secondsValue, err := strconv.ParseFloat(v, 64)
 
@@ -112,21 +104,32 @@ func main() {
 					panic(err)
 				}
 
-				s.d.AddProperty(&keyize.DynamicsProperty{
-					Kind:  kind,
-					KeyA:  keyA,
-					KeyB:  keyB,
-					Value: secondsValue * 1000,
-				})
+				s.AddPropertyByName(finalFieldName, secondsValue * 1000)
 			}
 		}
 
-		sessions = append(sessions, s)
+		relevSubj, ok := subjects[curSubj]
+
+		if !ok {
+			subjects[curSubj] = &subject{
+				name: curSubj,
+				sessions:   []*keyize.Dynamics{s},
+				avgSession: nil,
+			}
+		} else {
+			relevSubj.sessions = append(relevSubj.sessions, s)
+		}
 	}
 
-	// Now summarize data into users using averages
+	// Now summarize data for subject averages
 
-	fmt.Println("Done loading")
+	for _, u := range subjects {
+		u.avgSession = keyize.AvgDynamics(u.sessions)
+	}
+
+	// Done. Perform tests.
+
+	fmt.Println("Done loading", len(subjects), "subjects.")
 
 	performClosedSetID()
 }
@@ -137,36 +140,28 @@ func performClosedSetID() {
 	correct := 0
 	incorrect := 0
 
-	for i, a := range sessions {
-		fmt.Println(i, "/", len(sessions))
+	for topSubjName, topSubj := range subjects {
+		for _, cdyn := range topSubj.sessions {
+			var bestMatchSubjName string
+			var bestMatchDist float64 = -2
 
-		var bestDist float64
-		var bestMatch *session = nil
+			for csubjName, csubj := range subjects {
+				dist := cdyn.ManhattanDist(csubj.avgSession, nil)
 
-		for _, b := range sessions {
-			// Ignore if sessions are same session
-			if a == b {
-				continue
+				if dist < bestMatchDist || bestMatchDist == -2 {
+					bestMatchSubjName = csubjName
+					bestMatchDist = dist
+				}
 			}
 
-			dist, err := a.d.ManhattanDist(b.d, nil)
-
-			if err != nil {
-				panic(err)
+			if bestMatchSubjName == topSubjName {
+				correct++
+			} else {
+				//fmt.Println(bestMatchSubjName, topSubjName, bestMatchDist)
+				incorrect++
 			}
-
-			if bestMatch == nil || dist < bestDist {
-				bestMatch = b
-				bestDist = dist
-			}
-		}
-
-		if a.subject == bestMatch.subject {
-			correct++
-		} else {
-			incorrect++
 		}
 	}
 
-	fmt.Printf("Accuracy: %.2f", 100*float64(correct)/float64(correct+incorrect))
+	fmt.Printf("Accuracy: %.2f (%d / %d)", 100*float64(correct)/float64(correct+incorrect), correct, correct+incorrect)
 }

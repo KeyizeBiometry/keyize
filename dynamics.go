@@ -18,7 +18,7 @@ const (
 var defaultDynamicsPropertyKindScaleMap = DynamicsPropertyKindScaleMap{
 	Dwell:    1,
 	DownDown: 1 / 19.4,
-	UpDown:   1 / 14,
+	UpDown:   1 / 14.0,
 }
 
 // DynamicsPropertyKindScaleMap is a map of DynamicsPropertyKind to scaling values.
@@ -87,6 +87,21 @@ func (d *Dynamics) Properties() map[string]*DynamicsProperty {
 // AddProperty adds DynamicsProperty p to the internal map in Dynamics d.
 func (d *Dynamics) AddProperty(p *DynamicsProperty) {
 	d.properties[p.Name()] = p
+}
+
+// AddPropertyByName adds DynamicsProperty p to the internal map in Dynamics d from name.
+func (d *Dynamics) AddPropertyByName(name string, value float64) error {
+	prop, err := ParseDynamicsPropertyName(name)
+
+	if err != nil {
+		return err
+	}
+
+	prop.Value = value
+
+	d.properties[prop.Name()] = prop
+
+	return nil
 }
 
 // RemoveProperty removes DynamicsProperty p from the internal map in Dynamics d.
@@ -176,7 +191,7 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool, propert
 		// Calculate total using scaled values
 
 		if squareDifferences {
-			td += math.Pow(math.Abs(scaledT1Value-scaledT2Value), 2)
+			td += math.Pow(scaledT1Value-scaledT2Value, 2)
 		} else {
 			td += math.Abs(scaledT1Value - scaledT2Value)
 		}
