@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"flag"
 	"fmt"
 	"github.com/KeyizeBiometry/keyize"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"strings"
 	"unicode/utf8"
 )
+
+var maxGroupSize *int = flag.Int("maxClosedSetGroupSize", 10, "Max group size for closed set identification")
 
 var firstSegKindMap = map[string]keyize.DynamicsPropertyKind{
 	"H":  keyize.Dwell,
@@ -33,14 +36,16 @@ func convRune(s string) rune {
 }
 
 type subject struct {
-	name string
+	name       string
 	sessions   []*keyize.Dynamics
 	avgSession *keyize.Dynamics
 }
 
-var subjects = map[string]*subject{}
+var subjects = []*subject{}
 
 func main() {
+	flag.Parse()
+
 	// Open file
 
 	f, err := os.Open("DSL-StrongPasswordData.csv")
@@ -77,10 +82,6 @@ func main() {
 			continue
 		}
 
-		if len(subjects) >= 10 || i < 10 {
-			continue
-		}
-
 		s := keyize.NewDynamics()
 		var curSubj string
 
@@ -104,20 +105,26 @@ func main() {
 					panic(err)
 				}
 
-				s.AddPropertyByName(finalFieldName, secondsValue * 1000)
+				s.AddPropertyByName(finalFieldName, secondsValue*1000)
 			}
 		}
 
-		relevSubj, ok := subjects[curSubj]
+		sameSubjectIdx := -1
 
-		if !ok {
-			subjects[curSubj] = &subject{
-				name: curSubj,
+		for idx, s := range subjects {
+			if s.name == curSubj {
+				sameSubjectIdx = idx
+			}
+		}
+
+		if sameSubjectIdx == -1 {
+			subjects = append(subjects, &subject{
+				name:       curSubj,
 				sessions:   []*keyize.Dynamics{s},
 				avgSession: nil,
-			}
+			})
 		} else {
-			relevSubj.sessions = append(relevSubj.sessions, s)
+			subjects[sameSubjectIdx].sessions = append(subjects[sameSubjectIdx].sessions, s)
 		}
 	}
 
@@ -134,27 +141,25 @@ func main() {
 	performClosedSetID()
 }
 
-func performClosedSetID() {
-	fmt.Println("== Closed Set Identification Processing ==")
-
+func groupClosedSetIDStats(subjects []*subject) float64 {
 	correct := 0
 	incorrect := 0
 
-	for topSubjName, topSubj := range subjects {
+	for _, topSubj := range subjects {
 		for _, cdyn := range topSubj.sessions {
-			var bestMatchSubjName string
+			var bestMatchSubj *subject
 			var bestMatchDist float64 = -2
 
-			for csubjName, csubj := range subjects {
+			for _, csubj := range subjects {
 				dist := cdyn.ManhattanDist(csubj.avgSession, nil)
 
 				if dist < bestMatchDist || bestMatchDist == -2 {
-					bestMatchSubjName = csubjName
+					bestMatchSubj = csubj
 					bestMatchDist = dist
 				}
 			}
 
-			if bestMatchSubjName == topSubjName {
+			if bestMatchSubj == topSubj {
 				correct++
 			} else {
 				//fmt.Println(bestMatchSubjName, topSubjName, bestMatchDist)
@@ -163,5 +168,35 @@ func performClosedSetID() {
 		}
 	}
 
-	fmt.Printf("Accuracy: %.2f (%d / %d)", 100*float64(correct)/float64(correct+incorrect), correct, correct+incorrect)
+	return 100*float64(correct)/float64(correct+incorrect)
+}
+
+func performClosedSetID() {
+	fmt.Println("== Closed Set Identification Processing ==")
+
+	// For each group size
+
+	for groupSize := 2; groupSize <= *maxGroupSize; groupSize++ {
+		// For each possible sequential group in subjects
+
+		var results []float64
+
+		for startIdx := 0; startIdx < len(subjects)-groupSize; startIdx++ {
+			useGroup := subjects[startIdx : startIdx+groupSize]
+
+			results = append(results, groupClosedSetIDStats(useGroup))
+		}
+
+		// Average results
+
+		t := 0.0
+
+		for _, r := range results {
+			t += r
+		}
+
+		avgAccuracy := t / float64(len(results))
+
+		fmt.Printf("GS %d   %d   %.2f\n", groupSize, len(results), avgAccuracy)
+	}
 }
