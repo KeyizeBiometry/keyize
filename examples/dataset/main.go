@@ -212,6 +212,6 @@ func performClosedSetID() {
 
 		avgAccuracy := t / float64(len(results))
 
-		fmt.Printf("GS %d   %d   %.2f\n", groupSize, len(results), avgAccuracy)
+		fmt.Printf("GS %d\t%d\t%.2f\n", groupSize, len(results), avgAccuracy)
 	}
 }
