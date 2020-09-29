@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"unicode/utf8"
 )
 
@@ -138,37 +140,50 @@ func main() {
 
 	fmt.Println("Done loading", len(subjects), "subjects.")
 
+	StartTime("ClosedSetID")
+
 	performClosedSetID()
+
+	EndTime()
 }
 
 func groupClosedSetIDStats(subjects []*subject) float64 {
-	correct := 0
-	incorrect := 0
+	var correct int64
+	var incorrect int64
+
+	wg := &sync.WaitGroup{}
 
 	for _, topSubj := range subjects {
-		for _, cdyn := range topSubj.sessions {
-			var bestMatchSubj *subject
-			var bestMatchDist float64 = -2
+		wg.Add(1)
 
-			for _, csubj := range subjects {
-				dist := cdyn.ManhattanDist(csubj.avgSession, nil)
+		go func() {
+			for _, cdyn := range topSubj.sessions {
+				var bestMatchSubj *subject
+				var bestMatchDist float64 = -2
 
-				if dist < bestMatchDist || bestMatchDist == -2 {
-					bestMatchSubj = csubj
-					bestMatchDist = dist
+				for _, csubj := range subjects {
+					dist := cdyn.ManhattanDist(csubj.avgSession, nil)
+
+					if dist < bestMatchDist || bestMatchDist == -2 {
+						bestMatchSubj = csubj
+						bestMatchDist = dist
+					}
+				}
+
+				if bestMatchSubj == topSubj {
+					atomic.AddInt64(&correct, 1)
+				} else {
+					atomic.AddInt64(&incorrect, 1)
 				}
 			}
 
-			if bestMatchSubj == topSubj {
-				correct++
-			} else {
-				//fmt.Println(bestMatchSubjName, topSubjName, bestMatchDist)
-				incorrect++
-			}
-		}
+			wg.Done()
+		}()
 	}
 
-	return 100*float64(correct)/float64(correct+incorrect)
+	wg.Wait()
+
+	return 100 * float64(correct) / float64(correct+incorrect)
 }
 
 func performClosedSetID() {
