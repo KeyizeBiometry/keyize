@@ -4,6 +4,56 @@ import (
 	"testing"
 )
 
+func TestAvgDynamics(t *testing.T) {
+	d1 := NewDynamics()
+	d2 := NewDynamics()
+
+	d1.AddPropertyByName("D.A", 2)
+	d2.AddPropertyByName("D.A", 4)
+
+	d1.AddPropertyByName("DD.B.C", 2)
+	d2.AddPropertyByName("DD.B.C", 4)
+
+	d1.AddPropertyByName("UD.D.e", 4.5)
+	d2.AddPropertyByName("UD.D.e", 4.7)
+
+	d1.AddPropertyByName("UD.F.G", 4.2)
+
+	avg := AvgDynamics([]*Dynamics{d1, d2})
+
+	avgProps := avg.Properties()
+
+	if avgProps["D.A"].Value != 3 || avgProps["DD.B.C"].Value != 3 || avgProps["UD.D.e"].Value != 4.6 || avgProps["UD.F.G"].Value != 4.2 {
+		for _, p := range avgProps {
+			t.Log(p.Name(), p.Value)
+		}
+
+		t.Fatal("Incorrect average property values")
+	}
+}
+
+func TestDynamics_AddPropertyByName(t *testing.T) {
+	d := NewDynamics()
+
+	d.AddPropertyByName("D.H", 5)
+	d.AddPropertyByName("DD.j.W", 4)
+	d.AddPropertyByName("UD.o.E", 3)
+
+	props := d.Properties()
+
+	if props["D.H"].Value != 5 || props["DD.j.W"].Value != 4 || props["UD.o.E"].Value != 3 {
+		t.Fatal("Not all properties exist / some may have incorrect values")
+	} else {
+		t.Log("Confirmed correct properties were added")
+	}
+
+	if props["D.H"].KeyA != 'H' || props["DD.j.W"].KeyA != 'j' || props["DD.j.W"].KeyB != 'W' || props["UD.o.E"].KeyA != 'o' || props["UD.o.E"].KeyB != 'E' {
+		t.Fatal("Properties have incorrect KeyA / KeyB values")
+	} else {
+		t.Log("Confirmed correct KeyA / KeyB were determined")
+	}
+}
+
 func TestDynamics_GetProportionSharedProperties(t *testing.T) {
 	dynA := NewDynamics()
 	dynB := NewDynamics()

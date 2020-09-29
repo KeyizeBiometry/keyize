@@ -16,10 +16,10 @@ func (f floatSliceMapMan) Add(k string, v float64) {
 	s, ok := f[k]
 
 	if ok {
-		s = append(s, v)
+		f[k] = append(s, v)
+	} else {
+		f[k] = []float64{v}
 	}
-
-	f[k] = []float64{v}
 }
 
 func (f floatSliceMapMan) Reduce() map[string]float64 {
