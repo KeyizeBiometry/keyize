@@ -171,6 +171,8 @@ func ImportKeyizeV1(d string) (*Recording, error) {
 
 	matches := v1regex.FindAllStringSubmatch(d, -1)
 
+	var lastAt int64 = -100
+
 	for _, m := range matches {
 		kindRune, _ := utf8.DecodeRuneInString(m[1])
 		subjectRune, _ := utf8.DecodeRuneInString(m[2])
@@ -189,6 +191,14 @@ func ImportKeyizeV1(d string) (*Recording, error) {
 
 		if err != nil {
 			return nil, err
+		}
+
+		if at < lastAt {
+			return nil, errors.New("invalid at value " + strconv.Itoa(int(at)) + " is less than previous")
+		}
+
+		if at < 0 {
+			return nil, errors.New("invalid at value " + strconv.Itoa(int(at)) + " is less than 0")
 		}
 
 		rec.Events = append(rec.Events, &RecordingEvent{
