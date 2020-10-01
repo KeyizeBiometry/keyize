@@ -159,8 +159,9 @@ func (d *Dynamics) SharedProperties(a *Dynamics, method SharedPropertiesMethod) 
 	return shared, total
 }
 
-func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool, propertyKindScaleMap DynamicsPropertyKindScaleMap) float64 {
+func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool, propertyKindScaleMap DynamicsPropertyKindScaleMap) (float64, int) {
 	td := 0.0
+	count := 0
 
 	for timingName, t1 := range d.properties {
 		t2, ok := a.properties[timingName]
@@ -195,16 +196,18 @@ func (d *Dynamics) intermediateDist(a *Dynamics, squareDifferences bool, propert
 		} else {
 			td += math.Abs(scaledT1Value - scaledT2Value)
 		}
+
+		count++
 	}
 
-	return td
+	return td, count
 }
 
 // ManhattanDist uses the Manhattan distance metric to find distance between Dynamics d and a.
 //
 // It uses propertyKindScaleMap for scaling. nil may be passed for propertyKindScaleMap and the optimized defaults will be used.
 func (d *Dynamics) ManhattanDist(a *Dynamics, propertyKindScaleMap DynamicsPropertyKindScaleMap) (dist float64) {
-	idist := d.intermediateDist(a, false, propertyKindScaleMap)
+	idist, _ := d.intermediateDist(a, false, propertyKindScaleMap)
 
 	return idist
 }
@@ -213,9 +216,16 @@ func (d *Dynamics) ManhattanDist(a *Dynamics, propertyKindScaleMap DynamicsPrope
 //
 // It uses propertyKindScaleMap for scaling. nil may be passed for propertyKindScaleMap and the optimized defaults will be used.
 func (d *Dynamics) EuclideanDist(a *Dynamics, propertyKindScaleMap DynamicsPropertyKindScaleMap) (dist float64) {
-	idist := d.intermediateDist(a, true, propertyKindScaleMap)
+	idist, _ := d.intermediateDist(a, true, propertyKindScaleMap)
 
 	euclideanDist := math.Sqrt(idist)
 
 	return euclideanDist
+}
+
+// AvgScaledPropDiff returns the average distance between scaled values of properties shared between Dynamics d and a.
+func (d *Dynamics) AvgScaledPropDiff(a *Dynamics, propertyKindScaleMap DynamicsPropertyKindScaleMap) float64 {
+	idist, count := d.intermediateDist(a, false, propertyKindScaleMap)
+
+	return idist / float64(count)
 }
