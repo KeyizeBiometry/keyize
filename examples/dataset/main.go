@@ -269,11 +269,21 @@ func performAvgScaledPropDiffCollection() {
 		}
 	}
 
-	fmt.Printf("Average same subject AvgScaledPropDiff: %.2f\n", avgFloatSlice(sameSubjectAvgScaledPropDiffs))
-	fmt.Printf("Average diff subject AvgScaledPropDiff: %.2f\n\n", avgFloatSlice(diffSubjectAvgScaledPropDiffs))
+	avgSameSubjectAvgScaledPropDiffs := avgFloatSlice(sameSubjectAvgScaledPropDiffs)
+	avgDiffSubjectAvgScaledPropDiffs := avgFloatSlice(diffSubjectAvgScaledPropDiffs)
 
-	fmt.Printf("Average same subject ProportionMatch: %.2f\n", avgFloatSlice(sameSubjectAvgScaledPropMatches))
-	fmt.Printf("Average diff subject ProportionMatch: %.2f\n", avgFloatSlice(diffSubjectAvgScaledPropMatches))
+	fmt.Printf("Average same subject AvgScaledPropDiff: %.2f\n", avgSameSubjectAvgScaledPropDiffs)
+	fmt.Printf("Average diff subject AvgScaledPropDiff: %.2f\n", avgDiffSubjectAvgScaledPropDiffs)
+
+	fmt.Printf("Difference in avg AvgScaledPropDiff: %.2f\n\n", avgDiffSubjectAvgScaledPropDiffs-avgSameSubjectAvgScaledPropDiffs)
+
+	avgSameSubjectAvgScaledPropMatches := avgFloatSlice(sameSubjectAvgScaledPropMatches)
+	avgDiffSubjectAvgScaledPropMatches := avgFloatSlice(diffSubjectAvgScaledPropMatches)
+
+	fmt.Printf("Average same subject ProportionMatch: %.2f\n", avgSameSubjectAvgScaledPropMatches)
+	fmt.Printf("Average diff subject ProportionMatch: %.2f\n", avgDiffSubjectAvgScaledPropMatches)
+
+	fmt.Printf("Difference in avg ProportionMatch: %.2f\n", avgSameSubjectAvgScaledPropMatches-avgDiffSubjectAvgScaledPropMatches)
 }
 
 func avgFloatSlice(a []float64) float64 {
