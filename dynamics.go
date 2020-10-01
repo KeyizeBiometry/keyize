@@ -18,7 +18,7 @@ const (
 var defaultDynamicsPropertyKindScaleMap = DynamicsPropertyKindScaleMap{
 	Dwell:    1.1,
 	DownDown: 1 / 19.4,
-	UpDown:   1 / 5.0,
+	UpDown:   1 / 13.0,
 }
 
 // DynamicsPropertyKindScaleMap is a map of DynamicsPropertyKind to scaling values.

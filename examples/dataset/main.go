@@ -99,6 +99,20 @@ func main() {
 					fieldNameSegs[0] = "D"
 				}
 
+				for segIdx, segVal := range fieldNameSegs {
+					replace, ok := convRuneMap[segVal]
+
+					if !ok {
+						continue
+					}
+
+					fieldNameSegs[segIdx] = string(replace)
+				}
+
+				if len(fieldNameSegs) > 3 {
+					fieldNameSegs = []string{fieldNameSegs[0], fieldNameSegs[2], fieldNameSegs[3]}
+				}
+
 				finalFieldName := strings.Join(fieldNameSegs, ".")
 
 				secondsValue, err := strconv.ParseFloat(v, 64)
@@ -107,8 +121,15 @@ func main() {
 					panic(err)
 				}
 
-				s.AddPropertyByName(finalFieldName, secondsValue*1000)
+				if err = s.AddPropertyByName(finalFieldName, secondsValue*1000); err != nil {
+					panic(err)
+				}
 			}
+		}
+
+		if len(curSubj) < 3 {
+			fmt.Println("Discard invalid subj")
+			continue
 		}
 
 		sameSubjectIdx := -1
