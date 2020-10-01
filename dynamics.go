@@ -14,6 +14,13 @@ const (
 	UpDown
 )
 
+// Scaling for use in ProportionMatch.
+// Provides a range for mapping result from AvgScaledPropDiff.
+//
+// These numbers are derived from results from examples/dataset and then hand-optimized.
+const AvgScaledPropDiffSame float64 = 11.7
+const AvgScaledPropDiffOther float64 = 12.0
+
 // defaultDynamicsPropertyKindScaleMap is the optimized kind scale map discovered during research
 var defaultDynamicsPropertyKindScaleMap = DynamicsPropertyKindScaleMap{
 	Dwell:    1.1,
@@ -228,4 +235,14 @@ func (d *Dynamics) AvgScaledPropDiff(a *Dynamics, propertyKindScaleMap DynamicsP
 	idist, count := d.intermediateDist(a, false, propertyKindScaleMap)
 
 	return idist / float64(count)
+}
+
+// ProportionMatch returns a usable match proportion between Dynamics d and a, on a scale of 0.0 to 1.0.
+func (d *Dynamics) ProportionMatch(a *Dynamics) float64 {
+	avgScaledPropDiff := d.AvgScaledPropDiff(a, nil)
+
+	// Find proportion from avgScaledPropDiff by using range derived from examples/dataset result.
+	scaledProportion := 1 - math.Min(math.Max(avgScaledPropDiff-AvgScaledPropDiffSame, 0) / (AvgScaledPropDiffOther-AvgScaledPropDiffSame), 1)
+
+	return scaledProportion
 }
