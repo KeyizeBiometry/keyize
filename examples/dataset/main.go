@@ -166,6 +166,12 @@ func main() {
 	performClosedSetID()
 
 	EndTime()
+
+	StartTime("AvgScaledPropDiff")
+
+	performAvgScaledPropDiffCollection()
+
+	EndTime()
 }
 
 func groupClosedSetIDStats(subjects []*subject) float64 {
@@ -235,4 +241,38 @@ func performClosedSetID() {
 
 		fmt.Printf("GS %d\t%d\t%.2f\n", groupSize, len(results), avgAccuracy)
 	}
+}
+
+func performAvgScaledPropDiffCollection() {
+	fmt.Println("== AvgScaledPropDiff Collection ==")
+
+	sameSubjectAvgScaledPropDiffs := []float64{}
+	diffSubjectAvgScaledPropDiffs := []float64{}
+
+	for _, subjectA := range subjects {
+		for _, cdyn := range subjectA.sessions {
+			for _, subjectB := range subjects {
+				avgDiff := cdyn.AvgScaledPropDiff(subjectB.avgSession, nil)
+
+				if subjectA == subjectB {
+					sameSubjectAvgScaledPropDiffs = append(sameSubjectAvgScaledPropDiffs, avgDiff)
+				} else {
+					diffSubjectAvgScaledPropDiffs = append(diffSubjectAvgScaledPropDiffs, avgDiff)
+				}
+			}
+		}
+	}
+
+	fmt.Printf("Average same subject AvgScaledPropDiff: %.2f\n", avgFloatSlice(sameSubjectAvgScaledPropDiffs))
+	fmt.Printf("Average diff subject AvgScaledPropDiff: %.2f\n", avgFloatSlice(diffSubjectAvgScaledPropDiffs))
+}
+
+func avgFloatSlice(a []float64) float64 {
+	t := 0.0
+
+	for _, v := range a {
+		t += v
+	}
+
+	return t / float64(len(a))
 }
