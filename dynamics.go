@@ -19,7 +19,7 @@ const (
 //
 // These numbers are derived from results from examples/dataset and then hand-optimized.
 //
-// Original detected optimized range is: 7.69, 16.85
+// Original detected average range is: 7.69, 16.85
 const AvgScaledPropDiffSame float64 = 11.7
 const AvgScaledPropDiffOther float64 = 12.0
 
