@@ -45,6 +45,8 @@ func (r *Recording) Text() string {
 			if e.Subject == '\b' {
 				// Backspace. Delete last character.
 				text = text[:len(text)-1]
+
+				continue
 			}
 
 			// Otherwise append normally
