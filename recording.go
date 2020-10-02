@@ -33,12 +33,21 @@ type RecordingEvent struct {
 	Subject rune
 }
 
-// Text returns the text typed in Recording r.
+// Text returns the (approximate) text typed in Recording r.
 func (r *Recording) Text() string {
 	var text []rune
 
 	for _, e := range r.Events {
 		if e.Kind == KeyDown {
+			// Check if this is a special deletion character
+			// We cannot do much with delete (\x7F) because we don't know cursor location when it is being used. Oh well.
+
+			if e.Subject == '\b' {
+				// Backspace. Delete last character.
+				text = text[:len(text)-1]
+			}
+
+			// Otherwise append normally
 			text = append(text, e.Subject)
 		}
 	}
