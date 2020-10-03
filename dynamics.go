@@ -20,8 +20,8 @@ const (
 // These numbers are derived from results from examples/dataset and then hand-optimized.
 //
 // Original detected average range is: 7.69, 16.85
-const AvgScaledPropDiffSame float64 = 11.7
-const AvgScaledPropDiffOther float64 = 12.0
+const AvgScaledPropDiffSame float64 = 7.69
+const AvgScaledPropDiffOther float64 = 16.85
 
 // defaultDynamicsPropertyKindScaleMap is the optimized kind scale map discovered during research
 var defaultDynamicsPropertyKindScaleMap = DynamicsPropertyKindScaleMap{
