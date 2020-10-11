@@ -3,6 +3,12 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/KeyizeBiometry/keyize)](https://pkg.go.dev/github.com/KeyizeBiometry/keyize)
 
+The keyize package provides types Recording and Dynamics.
+
+Recording supports the manual addition of RecordingEvents, and can also parse recordings in the KeyizeV1 format. (eg. those created with [KeyizeBiometry/web-recorder](https://github.com/KeyizeBiometry/web-recorder))
+
+Dynamics support a number of operations, and should cover most processing use-cases.
+
 # Install
 
 ```sh
