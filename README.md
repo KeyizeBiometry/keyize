@@ -18,7 +18,7 @@ go get github.com/KeyizeBiometry/keyize
 # Import Recording and Get Dynamics
 
 ```go
-rec, err := keyize.ImportKeyizeV1("d")
+rec, err := keyize.ImportKeyizeV1("dH357uH582de1110ue1389dl2345ul2853dl3604ul4299do4458uo4729d 5583u 5815dw5942uw6196do6770uo7254dr7507ur7907dl8904ul9411dd10384ud10637")
 
 // rec.Events will contain a list of parsed recording events
 
