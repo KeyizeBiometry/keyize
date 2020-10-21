@@ -212,6 +212,8 @@ func ImportKeyizeV1(d string) (*Recording, error) {
 			return nil, errors.New("invalid at value " + strconv.Itoa(int(at)) + " is less than 0")
 		}
 
+		lastAt = at
+
 		rec.Events = append(rec.Events, &RecordingEvent{
 			Kind:    eventKind,
 			At:      int(at),
